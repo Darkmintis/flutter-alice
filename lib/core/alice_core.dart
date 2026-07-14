@@ -28,6 +28,10 @@ class AliceCore {
   /// Icon url for notification
   final String notificationIcon;
 
+  /// Whether Alice is enabled. When false, all interception and UI is
+  /// suppressed.
+  bool _enabled;
+
   GlobalKey<NavigatorState>? _navigatorKey;
   Brightness _brightness = Brightness.light;
   bool _isInspectorOpened = false;
@@ -43,14 +47,16 @@ class AliceCore {
     showNotification,
     showInspectorOnShake,
     darkTheme,
-    notificationIcon,
-  ) {
+    notificationIcon, [
+    bool enabled = true,
+  ]) {
     _singleton ??= AliceCore._(
       _navigatorKey,
       showNotification,
       showInspectorOnShake,
       darkTheme,
       notificationIcon,
+      enabled,
     );
     return _singleton!;
   }
@@ -62,6 +68,7 @@ class AliceCore {
     this.showInspectorOnShake,
     this.darkTheme,
     this.notificationIcon,
+    this._enabled,
   ) {
     if (showNotification) {
       _callsSubscription = callsSubject.listen((_) => _onCallsChanged());
@@ -80,7 +87,7 @@ class AliceCore {
   Brightness get brightness => _brightness;
 
   void _onCallsChanged() async {
-    if (callsSubject.value.length > 0) {
+    if (_enabled && callsSubject.value.length > 0) {
       _notificationMessage = _getNotificationMessage();
       if (_notificationMessage != _notificationMessageShown &&
           !_notificationProcessing) {
@@ -98,6 +105,7 @@ class AliceCore {
   /// Opens Http calls inspector. This will navigate user to the new fullscreen
   /// page where all listened http calls can be viewed.
   void navigateToCallListScreen() {
+    if (!_enabled) return;
     var context = getContext();
     if (context == null) {
       print(
@@ -176,11 +184,13 @@ class AliceCore {
 
   /// Add alice http call to calls subject
   void addCall(AliceHttpCall call) {
+    if (!_enabled) return;
     callsSubject.add([call, ...callsSubject.value]);
   }
 
   /// Add error to exisng alice http call
   void addError(AliceHttpError error, int requestId) {
+    if (!_enabled) return;
     AliceHttpCall? selectedCall = _selectCall(requestId);
 
     if (selectedCall == null) {
@@ -194,6 +204,7 @@ class AliceCore {
 
   /// Add response to existing alice http call
   void addResponse(AliceHttpResponse response, int requestId) {
+    if (!_enabled) return;
     AliceHttpCall? selectedCall = _selectCall(requestId);
 
     if (selectedCall == null) {
@@ -210,6 +221,7 @@ class AliceCore {
 
   /// Add alice http call to calls subject
   void addHttpCall(AliceHttpCall aliceHttpCall) {
+    if (!_enabled) return;
     assert(aliceHttpCall.request != null, "Http call request can't be null");
     assert(aliceHttpCall.response != null, "Http call response can't be null");
     callsSubject.add([...callsSubject.value, aliceHttpCall]);
@@ -226,7 +238,7 @@ class AliceCore {
   bool isShowedBubble = false;
 
   void showDebugAnimNotification() {
-    if (isShowedBubble) {
+    if (!_enabled || isShowedBubble) {
       return;
     }
     var context = getContext();

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:chopper/chopper.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_alice/core/alice_chopper_response_interceptor.dart';
@@ -32,12 +33,15 @@ class Alice {
   late AliceHttpAdapter _httpAdapter;
 
   /// Creates alice instance.
+  /// If [onlyDebug] is true (default), Alice only works in debug mode.
+  /// Set [onlyDebug] to false to enable Alice in both debug and release modes.
   Alice(
       {GlobalKey<NavigatorState>? navigatorKey,
       this.showNotification = true,
       this.showInspectorOnShake = false,
       this.darkTheme = false,
-      this.notificationIcon = "@mipmap/ic_launcher"}) {
+      this.notificationIcon = "@mipmap/ic_launcher",
+      bool onlyDebug = true}) {
     _navigatorKey = navigatorKey ?? GlobalKey<NavigatorState>();
     _aliceCore = AliceCore(
       _navigatorKey,
@@ -45,6 +49,7 @@ class Alice {
       showInspectorOnShake,
       darkTheme,
       notificationIcon,
+      onlyDebug ? kDebugMode : true,
     );
     _httpClientAdapter = AliceHttpClientAdapter(_aliceCore);
     _httpAdapter = AliceHttpAdapter(_aliceCore);
