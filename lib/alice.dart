@@ -33,14 +33,19 @@ class Alice {
   late AliceHttpAdapter _httpAdapter;
 
   /// Creates alice instance.
+  ///
+  /// [enable] master switch — set to false to turn Alice off entirely.
+  ///
   /// If [onlyDebug] is true (default), Alice only works in debug mode.
-  /// Set [onlyDebug] to false to enable Alice in both debug and release modes.
+  /// Set [onlyDebug] to false to allow Alice in release mode as well
+  /// (still requires [enable] to be true).
   Alice(
       {GlobalKey<NavigatorState>? navigatorKey,
       this.showNotification = true,
       this.showInspectorOnShake = false,
       this.darkTheme = false,
       this.notificationIcon = "@mipmap/ic_launcher",
+      bool enable = true,
       bool onlyDebug = true}) {
     _navigatorKey = navigatorKey ?? GlobalKey<NavigatorState>();
     _aliceCore = AliceCore(
@@ -49,7 +54,7 @@ class Alice {
       showInspectorOnShake,
       darkTheme,
       notificationIcon,
-      onlyDebug ? kDebugMode : true,
+      enable && (onlyDebug ? kDebugMode : true),
     );
     _httpClientAdapter = AliceHttpClientAdapter(_aliceCore);
     _httpAdapter = AliceHttpAdapter(_aliceCore);

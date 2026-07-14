@@ -28,8 +28,8 @@ class AliceCore {
   /// Icon url for notification
   final String notificationIcon;
 
-  /// Whether Alice is enabled. When false, all interception and UI is
-  /// suppressed.
+  /// Resolved enable flag from Alice(enable + onlyDebug).
+  /// When false, all interception and UI is suppressed.
   bool _enabled;
 
   GlobalKey<NavigatorState>? _navigatorKey;
